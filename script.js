@@ -3,26 +3,23 @@ const VIRUSTOTAL_API_KEY = 'deeec0956d89958547db93b5168256a89d1cc99ef2ac75e39d74
 
 // Common threat database
 const THREAT_DATABASE = {
-    // Malware families
     'Trojan': ['Trojan.Generic', 'Trojan.Win32', 'Trojan.Spy', 'Trojan.Dropper', 'Trojan.Banker'],
     'Virus': ['W97M', 'X97M', 'O97M', 'Virus.Win32', 'Virus.MSWord'],
     'Worm': ['Worm.Agent', 'Worm.AutoRun', 'Worm.Email'],
     'Ransomware': ['Ransom', 'CryptoLocker', 'WannaCry', 'Ryuk', 'REvil'],
     'Spyware': ['Spyware', 'Keylogger', 'Spy.Agent'],
     'Adware': ['Adware', 'AdLoad', 'Downloader', 'BundleInstaller'],
-    
-    // Phishing categories
     'Phishing': ['Phishing', 'Fraud', 'Scam', 'Suspicious', 'Malicious'],
     'Social Engineering': ['SocialEngineering', 'FakeAV', 'FakeAlert'],
-    
-    // Network threats
     'Botnet': ['Botnet', 'Zombie', 'C&C'],
     'Miner': ['CoinMiner', 'BitCoinMiner', 'CryptoMiner'],
-    
-    // File threats
     'Exploit': ['Exploit', 'Shellcode', 'BufferOverflow'],
     'Backdoor': ['Backdoor', 'Rootkit', 'RemoteAccess']
 };
+
+// Global variables to store current scan results
+let currentScanResult = null;
+let currentThreatDetails = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeScanner();
@@ -83,8 +80,14 @@ function initializeScanner() {
     document.querySelector('.report-button').addEventListener('click', function() {
         alert('False positive reported to our security team!');
     });
+    
+    // PDF Report Button - UPDATED
     document.querySelector('.pdf-button').addEventListener('click', function() {
-        alert('PDF report feature coming in next update!');
+        if (!currentScanResult) {
+            alert('Please complete a scan first to generate a report');
+            return;
+        }
+        generatePDFReport();
     });
 
     // Business buttons
@@ -175,6 +178,18 @@ function showDetailedResults(result) {
     const detectedThreats = threatAnalysis.detectedThreats;
     const threatCategories = threatAnalysis.categories;
     
+    // Store results for PDF generation
+    currentScanResult = {
+        ...result,
+        riskScore: riskScore,
+        verdict: verdict,
+        scanType: 'URL'
+    };
+    currentThreatDetails = {
+        detectedThreats: detectedThreats,
+        categories: threatCategories
+    };
+    
     // Update UI with detailed results
     document.getElementById('result-url').textContent = result.target;
     document.getElementById('risk-score').textContent = `${riskScore}%`;
@@ -212,6 +227,206 @@ function showDetailedResults(result) {
     console.log(`Scan completed: ${result.target} - ${verdict} (${riskScore}%) - Threats: ${detectedThreats.length}`);
 }
 
+// GENERATE PROFESSIONAL PDF REPORT
+function generatePDFReport() {
+    if (!currentScanResult || !currentThreatDetails) {
+        alert('No scan data available for report generation');
+        return;
+    }
+
+    // Show generating message
+    const pdfButton = document.querySelector('.pdf-button');
+    const originalText = pdfButton.textContent;
+    pdfButton.textContent = 'Generating PDF...';
+    pdfButton.disabled = true;
+
+    try {
+        // Create new PDF document
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 20;
+        const contentWidth = pageWidth - (margin * 2);
+        
+        // Add header with logo and title
+        doc.setFillColor(41, 128, 185);
+        doc.rect(0, 0, pageWidth, 40, 'F');
+        
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(20);
+        doc.setFont('helvetica', 'bold');
+        doc.text('LINK SHIELD SECURITY REPORT', pageWidth / 2, 25, { align: 'center' });
+        
+        doc.setFontSize(10);
+        doc.text('Professional Threat Analysis Report', pageWidth / 2, 32, { align: 'center' });
+        
+        // Reset text color for content
+        doc.setTextColor(0, 0, 0);
+        
+        let yPosition = 60;
+        
+        // Scan Summary Section
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('SCAN SUMMARY', margin, yPosition);
+        yPosition += 20;
+        
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        
+        // Summary table
+        const summaryData = [
+            ['Scanned Target:', currentScanResult.target],
+            ['Scan Date:', new Date(currentScanResult.scanDate).toLocaleDateString()],
+            ['Scan Type:', currentScanResult.scanType],
+            ['Overall Verdict:', currentScanResult.verdict],
+            ['Risk Score:', `${currentScanResult.riskScore}%`],
+            ['Engines Detected:', `${currentScanResult.positives}/${currentScanResult.total}`]
+        ];
+        
+        summaryData.forEach(([label, value]) => {
+            doc.setFont('helvetica', 'bold');
+            doc.text(label, margin, yPosition);
+            doc.setFont('helvetica', 'normal');
+            doc.text(value, margin + 60, yPosition);
+            yPosition += 8;
+        });
+        
+        yPosition += 15;
+        
+        // Threat Analysis Section
+        if (currentThreatDetails.detectedThreats.length > 0) {
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('THREAT ANALYSIS', margin, yPosition);
+            yPosition += 20;
+            
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            
+            // Threat categories
+            doc.setFont('helvetica', 'bold');
+            doc.text('Threat Categories:', margin, yPosition);
+            doc.setFont('helvetica', 'normal');
+            doc.text(currentThreatDetails.categories.join(', '), margin + 50, yPosition);
+            yPosition += 15;
+            
+            // Threat details table header
+            doc.setFillColor(240, 240, 240);
+            doc.rect(margin, yPosition, contentWidth, 10, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.text('Security Engine', margin + 5, yPosition + 7);
+            doc.text('Threat Name', margin + 70, yPosition + 7);
+            doc.text('Category', margin + 150, yPosition + 7);
+            yPosition += 15;
+            
+            // Threat details rows
+            currentThreatDetails.detectedThreats.forEach((threat, index) => {
+                if (yPosition > 250) { // Add new page if needed
+                    doc.addPage();
+                    yPosition = margin;
+                }
+                
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(8);
+                doc.text(threat.engine, margin + 5, yPosition + 5);
+                doc.text(threat.threat, margin + 70, yPosition + 5);
+                doc.text(threat.category, margin + 150, yPosition + 5);
+                
+                // Add separator line
+                doc.setDrawColor(200, 200, 200);
+                doc.line(margin, yPosition + 8, margin + contentWidth, yPosition + 8);
+                
+                yPosition += 12;
+            });
+        } else {
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('THREAT ANALYSIS', margin, yPosition);
+            yPosition += 20;
+            
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text('No threats detected. The target appears clean across all security engines.', margin, yPosition);
+            yPosition += 15;
+        }
+        
+        yPosition += 20;
+        
+        // Security Recommendations
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('SECURITY RECOMMENDATIONS', margin, yPosition);
+        yPosition += 20;
+        
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        
+        const recommendations = getSecurityRecommendations(currentScanResult.riskScore);
+        recommendations.forEach((rec, index) => {
+            if (yPosition > 250) {
+                doc.addPage();
+                yPosition = margin;
+            }
+            doc.text(`• ${rec}`, margin, yPosition);
+            yPosition += 8;
+        });
+        
+        yPosition += 15;
+        
+        // Footer
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Report generated by Link Shield Security - ${new Date().toLocaleString()}`, margin, 280);
+        doc.text('Powered by VirusTotal API | link-shield-security.netlify.app', margin, 285);
+        
+        // Save the PDF
+        const fileName = `LinkShield_Report_${currentScanResult.target.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.pdf`;
+        doc.save(fileName);
+        
+        alert('PDF report downloaded successfully!');
+        
+    } catch (error) {
+        console.error('PDF generation error:', error);
+        alert('Error generating PDF report: ' + error.message);
+    } finally {
+        // Restore button state
+        pdfButton.textContent = originalText;
+        pdfButton.disabled = false;
+    }
+}
+
+// GET SECURITY RECOMMENDATIONS BASED ON RISK
+function getSecurityRecommendations(riskScore) {
+    const recommendations = [
+        'Keep your antivirus software updated',
+        'Use a secure web browser with phishing protection',
+        'Enable two-factor authentication where available',
+        'Regularly update your operating system and applications'
+    ];
+    
+    if (riskScore > 70) {
+        recommendations.unshift(
+            'IMMEDIATE ACTION REQUIRED: Do not visit this URL',
+            'Consider running a full system antivirus scan',
+            'Change passwords if you have interacted with this target'
+        );
+    } else if (riskScore > 30) {
+        recommendations.unshift(
+            'Exercise caution when visiting this URL',
+            'Verify the website authenticity before entering any credentials'
+        );
+    } else {
+        recommendations.unshift(
+            'This target appears safe for browsing',
+            'Continue practicing good security habits'
+        );
+    }
+    
+    return recommendations;
+}
+
 // ANALYZE THREATS FROM SCAN DATA
 function analyzeThreats(scans) {
     const detectedThreats = [];
@@ -219,7 +434,6 @@ function analyzeThreats(scans) {
     
     if (!scans) return { detectedThreats: [], categories: [] };
     
-    // Analyze each antivirus result
     Object.entries(scans).forEach(([engine, data]) => {
         if (data.detected && data.result) {
             const threatName = data.result;
@@ -229,7 +443,6 @@ function analyzeThreats(scans) {
                 category: categorizeThreat(threatName)
             });
             
-            // Add to categories
             const category = categorizeThreat(threatName);
             if (category) categories.add(category);
         }
@@ -291,7 +504,6 @@ function showThreatDetails(detectedThreats, categories, positiveCount) {
         `;
     }
     
-    // Update the threat-info section
     const threatInfoElement = document.querySelector('.threat-info');
     threatInfoElement.innerHTML = `
         <h4>Threat Intelligence</h4>
@@ -319,17 +531,14 @@ function showThreatDetails(detectedThreats, categories, positiveCount) {
 function simulateDetailedFileScan(fileName, fileType) {
     const fileScanButton = document.querySelector('.file-scan');
     
-    // Show loading
     fileScanButton.textContent = 'Analyzing File...';
     fileScanButton.disabled = true;
 
     setTimeout(() => {
-        // Realistic file analysis with detailed threats
         let riskScore, verdict, detectedThreats, categories;
         
         const lowerName = fileName.toLowerCase();
         
-        // Simulate different threat scenarios
         if (lowerName.includes('trojan') || lowerName.includes('malware.exe')) {
             riskScore = 92;
             verdict = 'Malicious';
@@ -348,36 +557,33 @@ function simulateDetailedFileScan(fileName, fileType) {
                 { engine: 'Avast', threat: 'Win32:RansomX-gen', category: 'Ransomware' }
             ];
             categories = ['Ransomware'];
-        } else if (lowerName.includes('adware') || lowerName.includes('bundler')) {
-            riskScore = 45;
-            verdict = 'Suspicious';
-            detectedThreats = [
-                { engine: 'Avira', threat: 'ADWARE/Generic', category: 'Adware' },
-                { engine: 'ESET', threat: 'Win32/Adware.BundleInstaller', category: 'Adware' }
-            ];
-            categories = ['Adware'];
-        } else if (lowerName.includes('phishing') || lowerName.includes('scam.pdf')) {
-            riskScore = 78;
-            verdict = 'Malicious';
-            detectedThreats = [
-                { engine: 'Google Safebrowsing', threat: 'Phishing', category: 'Phishing' },
-                { engine: 'Cisco Talos', threat: 'Fraudulent', category: 'Phishing' }
-            ];
-            categories = ['Phishing'];
         } else if (lowerName.includes('test') || lowerName.includes('demo') || lowerName.includes('clean')) {
             riskScore = 2;
             verdict = 'Safe';
             detectedThreats = [];
             categories = [];
         } else {
-            // Random but realistic
             riskScore = Math.floor(Math.random() * 25);
             verdict = 'Safe';
             detectedThreats = [];
             categories = [];
         }
         
-        // Show detailed file results
+        // Store results for PDF
+        currentScanResult = {
+            target: fileName,
+            positives: detectedThreats.length,
+            total: 65,
+            scanDate: new Date().toISOString(),
+            riskScore: riskScore,
+            verdict: verdict,
+            scanType: 'File'
+        };
+        currentThreatDetails = {
+            detectedThreats: detectedThreats,
+            categories: categories
+        };
+        
         showDetailedFileResults(fileName, riskScore, verdict, detectedThreats, categories);
         
         fileScanButton.textContent = 'Scan File';
@@ -402,9 +608,7 @@ function showDetailedFileResults(fileName, riskScore, verdict, detectedThreats, 
     document.getElementById('suspicious-activity').textContent = detectedThreats.length > 0 ? 
         `${detectedThreats.length} security engines detected threats` : 'No threats detected';
 
-    // Show detailed threat information
     showThreatDetails(detectedThreats, categories, detectedThreats.length);
-
     document.querySelector('.results-section').style.display = 'block';
     document.querySelector('.results-section').scrollIntoView({ behavior: 'smooth' });
 }
@@ -448,6 +652,10 @@ function resetScanner() {
     document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
     document.querySelector('[data-tab="url"]').classList.add('active');
     document.getElementById('url-tab').classList.add('active');
+    
+    // Clear stored results
+    currentScanResult = null;
+    currentThreatDetails = null;
 }
 
 // FALLBACK DEMO WITH DETAILED THREATS
@@ -456,32 +664,20 @@ function simulateDetailedUrlScan(url) {
     
     const lowerUrl = url.toLowerCase();
     
-    // Realistic scenarios with detailed threats
     if (lowerUrl.includes('phishing-test.com')) {
         riskScore = 85;
         verdict = 'Malicious';
         detectedThreats = [
             { engine: 'Google Safebrowsing', threat: 'Phishing', category: 'Phishing' },
-            { engine: 'Norton Safe Web', threat: 'Fraudulent Website', category: 'Phishing' },
-            { engine: 'McAfee WebAdvisor', threat: 'Suspicious Website', category: 'Phishing' }
+            { engine: 'Norton Safe Web', threat: 'Fraudulent Website', category: 'Phishing' }
         ];
         categories = ['Phishing'];
-    } else if (lowerUrl.includes('malware-test.org')) {
-        riskScore = 92;
-        verdict = 'Malicious';
-        detectedThreats = [
-            { engine: 'Kaspersky', threat: 'Trojan-Downloader', category: 'Trojan' },
-            { engine: 'Bitdefender', threat: 'Generic Malware', category: 'Malware' },
-            { engine: 'Avast', threat: 'URL:Malicious', category: 'Malware' }
-        ];
-        categories = ['Trojan', 'Malware'];
-    } else if (lowerUrl.includes('google.com') || lowerUrl.includes('facebook.com')) {
+    } else if (lowerUrl.includes('google.com')) {
         riskScore = 1;
         verdict = 'Safe';
         detectedThreats = [];
         categories = [];
     } else {
-        // Random but weighted toward safe
         riskScore = Math.random() < 0.8 ? Math.floor(Math.random() * 20) : Math.floor(30 + Math.random() * 60);
         verdict = riskScore < 30 ? 'Safe' : riskScore < 70 ? 'Suspicious' : 'Malicious';
         
@@ -495,6 +691,21 @@ function simulateDetailedUrlScan(url) {
             categories = [];
         }
     }
+    
+    // Store results for PDF
+    currentScanResult = {
+        target: url,
+        positives: detectedThreats.length,
+        total: 65,
+        scanDate: new Date().toISOString(),
+        riskScore: riskScore,
+        verdict: verdict,
+        scanType: 'URL'
+    };
+    currentThreatDetails = {
+        detectedThreats: detectedThreats,
+        categories: categories
+    };
     
     showDetailedResults({
         target: url,
