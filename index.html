@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Shield - Scan, Detect, and Protect</title>
+    <link href="./styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">LINK SHIELD</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#business">For Business</a>
+                <a href="#blog">Blog</a>
+                <a href="#contact">Contact</a>
+            </div>
+            <button class="nav-button">Get Started</button>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Protect Your Digital World with <span class="highlight">Link Shield</span></h1>
+            <p class="tagline">Scan, Detect, and Protect. Your first line of defense against phishing, malware, and fake links.</p>
+            
+            <div class="scanner-box">
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab="url">URL Scan</button>
+                    <button class="tab-button" data-tab="file">File Scan</button>
+                </div>
+                
+                <div class="tab-content">
+                    <div class="tab-pane active" id="url-tab">
+                        <div class="input-group">
+                            <input type="text" placeholder="Paste suspicious URL here..." class="url-input">
+                            <button class="scan-button">Scan Now</button>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="file-tab">
+                        <div class="file-upload">
+                            <input type="file" id="file-input" accept=".apk,.pdf,.doc,.docx">
+                            <label for="file-input" class="file-label">
+                                <span class="file-icon">📁</span>
+                                <span>Choose APK, PDF, or Document</span>
+                            </label>
+                            <button class="scan-button file-scan">Scan File</button>
+                        </div>
+                    </div>
+                </div>
+                <p class="disclaimer">Powered by VirusTotal & urlscan.io APIs</p>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-number">12,400+</span>
+                    <span class="stat-label">Links Scanned</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">1,230+</span>
+                    <span class="stat-label">Threats Detected</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">99.8%</span>
+                    <span class="stat-label">Accuracy Rate</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <h2>How Link Shield Protects You</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>URL & File Scanning</h3>
+                    <p>Comprehensive scanning of URLs and uploaded files (APK, PDF, Documents) for embedded threats and malware.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Instant Threat Detection</h3>
+                    <p>Identify and neutralize phishing, malware, and fake links in seconds with real-time analysis.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Detailed Analysis Reports</h3>
+                    <p>Auto-generate comprehensive 1-page reports with risk scores, verdicts, and detailed evidence.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>Threat Intelligence</h3>
+                    <p>Powered by top-tier intelligence from VirusTotal, urlscan.io, and PhishTank APIs.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🚨</div>
+                    <h3>Report Suspicious Links</h3>
+                    <p>Help improve security by reporting new suspicious links to our community database.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💼</div>
+                    <h3>Business Solutions</h3>
+                    <p>Weekly scans and bulk upload capabilities for businesses and security professionals.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="results" class="results-section" style="display: none;">
+        <div class="container">
+            <h2>Scan Results</h2>
+            <div class="results-card">
+                <div class="result-header">
+                    <div class="url-scanned">
+                        <strong>Scanned URL:</strong>
+                        <span id="result-url">https://example.com</span>
+                    </div>
+                    <div class="risk-score">
+                        <span class="score-label">Risk Score:</span>
+                        <span class="score-value safe" id="risk-score">0/100</span>
+                    </div>
+                </div>
+                <div class="verdict">
+                    <h3>Verdict: <span id="verdict-text" class="verdict-safe">Safe</span></h3>
+                </div>
+                <div class="threat-info">
+                    <h4>Threat Information</h4>
+                    <div class="threat-details">
+                        <div class="threat-item">
+                            <span class="threat-label">Malware Detected:</span>
+                            <span class="threat-value" id="malware-detected">No</span>
+                        </div>
+                        <div class="threat-item">
+                            <span class="threat-label">Phishing Risk:</span>
+                            <span class="threat-value" id="phishing-risk">Low</span>
+                        </div>
+                        <div class="threat-item">
+                            <span class="threat-label">Suspicious Activity:</span>
+                            <span class="threat-value" id="suspicious-activity">None</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="action-button report-button">Report False Positive</button>
+                    <button class="action-button pdf-button">Download PDF Report</button>
+                    <button class="action-button new-scan-button">New Scan</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="business" class="business-section">
+        <div class="container">
+            <h2>For Businesses & Freelancers</h2>
+            <div class="business-content">
+                <div class="business-text">
+                    <h3>Professional Security Services</h3>
+                    <p>Offer comprehensive link and file safety check services to your clients with our business tools.</p>
+                    <ul class="business-features">
+                        <li>Bulk URL scanning</li>
+                        <li>Scheduled weekly scans</li>
+                        <li>White-label reporting</li>
+                        <li>API access</li>
+                        <li>Priority support</li>
+                    </ul>
+                    <div class="business-cta">
+                        <button class="cta-button primary">Get Business Access</button>
+                        <button class="cta-button secondary">Hire Me on Fiverr</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="blog" class="blog-section">
+        <div class="container">
+            <h2>Security Blog</h2>
+            <div class="blog-grid">
+                <article class="blog-card">
+                    <h3>5 Ways to Detect Phishing Links</h3>
+                    <p>Learn essential techniques to identify and avoid phishing attempts in your daily digital life.</p>
+                    <a href="#" class="read-more">Read More →</a>
+                </article>
+                <article class="blog-card">
+                    <h3>Understanding Malware in APK Files</h3>
+                    <p>How to spot malicious code in Android applications and protect your mobile devices.</p>
+                    <a href="#" class="read-more">Read More →</a>
+                </article>
+                <article class="blog-card">
+                    <h3>The Importance of URL Scanning</h3>
+                    <p>Why every click matters and how URL scanning can prevent security breaches.</p>
+                    <a href="#" class="read-more">Read More →</a>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <h2>Contact & Support</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3>Athul Krishna</h3>
+                    <p class="title">Cybersecurity Analyst | Link Shield Developer</p>
+                    <div class="contact-links">
+                        <a href="mailto:contact@linkshield.com" class="contact-link">
+                            <span class="contact-icon">📧</span>
+                            Email
+                        </a>
+                        <a href="#" class="contact-link">
+                            <span class="contact-icon">💼</span>
+                            LinkedIn
+                        </a>
+                        <a href="#" class="contact-link">
+                            <span class="contact-icon">📱</span>
+                            Telegram
+                        </a>
+                        <a href="#" class="contact-link">
+                            <span class="contact-icon">⭐</span>
+                            Fiverr Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="logo">LINK SHIELD</div>
+                    <p>Your first line of defense against digital threats.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <a href="#features">Features</a>
+                    <a href="#business">For Business</a>
+                    <a href="#blog">Blog</a>
+                    <a href="#contact">Contact</a>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Disclaimer</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 Link Shield. All rights reserved. | Powered by VirusTotal & urlscan.io APIs | Developed by Athul Krishna</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="./script.js"></script>
+</body>
+</html>
